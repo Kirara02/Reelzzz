@@ -1,4 +1,4 @@
-package com.reelzzz
+package id.kirara.reelzzz
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
