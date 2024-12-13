@@ -26,6 +26,7 @@ import {useRoute} from '@react-navigation/native';
 import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
 import {checkUsernameAvailability, register} from '../../redux/actions/userAction';
 import {uploadFile} from '../../redux/actions/fileAction';
+import {requestCameraPermission} from '../../utils/PermissionRequest';
 
 interface initialData {
   id_token: string;
@@ -87,15 +88,9 @@ const RegisterScreen = () => {
 
   const handleLaunchCamera = async () => {
     if (Platform.OS === 'android') {
-      const grantedCamera = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA, {
-        title: 'App Camera Permission',
-        message: 'App needs access to your camera',
-        buttonNeutral: 'Ask me later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
-      });
+      const grantedCamera = await requestCameraPermission();
 
-      if (grantedCamera === PermissionsAndroid.RESULTS.GRANTED) {
+      if (grantedCamera) {
         const result = await launchCamera({
           mediaType: 'photo',
           includeBase64: true,
@@ -106,6 +101,15 @@ const RegisterScreen = () => {
         }
       }
       return;
+    }
+
+    const result = await launchCamera({
+      mediaType: 'photo',
+      includeBase64: true,
+    });
+    if (result.assets && result.assets.length > 0) {
+      setIsLocalImagePickedUp(true);
+      setImageUri(result.assets[0].uri || '');
     }
   };
 
