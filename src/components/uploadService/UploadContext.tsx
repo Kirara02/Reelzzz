@@ -1,20 +1,20 @@
-import React, {createContext, ReactNode, useContext, useEffect, useState} from 'react';
+import React, {createContext, useState, useContext, useEffect, ReactNode} from 'react';
 import {
-  Alert,
+  View,
+  Text,
+  StyleSheet,
   Animated,
   Easing,
   Image,
-  Platform,
-  StyleSheet,
-  Text,
   TouchableOpacity,
-  View,
+  Platform,
+  Alert,
 } from 'react-native';
-import {useAppDispatch} from '../../redux/reduxHook';
-import {uploadFile} from '../../redux/actions/fileAction';
-import {createReel} from '../../redux/actions/reelAction';
 import {Colors} from '../../constants/Colors';
 import {navigate} from '../../utils/NavigationUtils';
+import {uploadFile} from '../../redux/actions/fileAction';
+import {useAppDispatch} from '../../redux/reduxHook';
+import {createReel} from '../../redux/actions/reelAction';
 
 interface UploadContextType {
   isUpload: boolean;
@@ -38,7 +38,7 @@ const defaultContext: UploadContextType = {
   thumbnailUri: '',
 };
 
-const uploadContext = createContext<UploadContextType>(defaultContext);
+const UploadContext = createContext<UploadContextType>(defaultContext);
 
 export const UploadProvider: React.FC<{children: ReactNode}> = ({children}) => {
   const [isUpload, showUpload] = useState<boolean>(false);
@@ -47,69 +47,76 @@ export const UploadProvider: React.FC<{children: ReactNode}> = ({children}) => {
   const [uploadAnimation] = useState<Animated.Value>(new Animated.Value(0));
   const [thumbnailUri, setThumbnailUri] = useState<string>('');
   const [uploading, setUploading] = useState<boolean>(false);
-
   const dispatch = useAppDispatch();
-
   const startUpload = async (thumb_uri: string, file_uri: string, caption: string) => {
-    Animated.timing(uploadAnimation, {
-      toValue: 1,
-      duration: 500,
-      easing: Easing.inOut(Easing.ease),
-      useNativeDriver: true,
-    });
-    setUploadProgress(0);
-    setThumbnailUri(thumb_uri);
-    setUploading(true);
-    setLoadingMessage('Upload Thumbnail....🚀');
-    showUpload(true);
-
-    const thumbnailRespone = await dispatch(uploadFile(thumb_uri, 'reel_thumbnail'));
-    setUploadProgress(30);
-    setLoadingMessage('Uploading Video....🎞️');
-    const videoRespone = await dispatch(uploadFile(file_uri, 'reel_video'));
-    setUploadProgress(70);
-    setLoadingMessage('Finishing Upload....✨');
-
-    const data = {
-      videoUri: videoRespone,
-      thumbUri: thumbnailRespone,
-      caption: caption,
-    };
-
-    await dispatch(createReel(data));
-    setUploading(false);
-    setUploadProgress(100);
-    await setTimeout(() => {
+    try {
       Animated.timing(uploadAnimation, {
-        toValue: 0,
+        toValue: 1,
         duration: 500,
         easing: Easing.inOut(Easing.ease),
         useNativeDriver: true,
-      }).start(() => showUpload(false));
-    }, 5000);
+      }).start();
+      setUploadProgress(0);
+      setThumbnailUri(thumb_uri);
+      setUploading(true);
+      setLoadingMessage('Uploading Thumbnail...🚀');
+      showUpload(true);
+
+      const thumbnailResponse = await dispatch(uploadFile(thumb_uri, 'reel_thumbnail'));
+      if (!thumbnailResponse) {
+        throw new Error('There was an upload error');
+      }
+      setUploadProgress(30);
+      setLoadingMessage('Uploading Video...🎞️');
+      const videoResponse = await dispatch(uploadFile(file_uri, 'reel_video'));
+      if (!videoResponse) {
+        throw new Error('There was an upload error');
+      }
+      setUploadProgress(70);
+      setLoadingMessage('Finishing Upload...✨');
+      const data = {
+        videoUri: videoResponse,
+        thumbUri: thumbnailResponse,
+        caption: caption,
+      };
+      await dispatch(createReel(data));
+      setUploading(false);
+      setUploadProgress(100);
+      await setTimeout(() => {
+        Animated.timing(uploadAnimation, {
+          toValue: 0,
+          duration: 500,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }).start(() => showUpload(false));
+      }, 5000);
+    } catch (error) {
+      console.log(error);
+      showUpload(false);
+    }
   };
 
   return (
-    <uploadContext.Provider
+    <UploadContext.Provider
       value={{
         isUpload,
         loadingMessage,
+        startUpload,
         uploadAnimation,
         thumbnailUri,
         uploadProgress,
         uploading,
-        startUpload,
         showUpload(value) {
           showUpload(value);
         },
       }}>
       {children}
       <UploadProgress />
-    </uploadContext.Provider>
+    </UploadContext.Provider>
   );
 };
 
-export const useUpload = () => useContext(uploadContext);
+export const useUpload = () => useContext(UploadContext);
 
 const UploadProgress: React.FC = () => {
   const {

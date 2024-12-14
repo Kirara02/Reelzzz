@@ -21,7 +21,6 @@ import CustomText from '../../components/global/CustomText';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {RFValue} from 'react-native-responsive-fontsize';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
-import {endAsyncEvent} from 'react-native/Libraries/Performance/Systrace';
 import {FONTS} from '../../constants/Fonts';
 import {FlatList} from 'react-native-gesture-handler';
 import {convertDurationToMMSS} from '../../utils/DateUtils';
