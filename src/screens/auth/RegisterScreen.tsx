@@ -36,7 +36,7 @@ interface initialData {
   userImage: string;
 }
 
-const RegisterScreen = () => {
+const RegisterScreen: FC = () => {
   const data = useRoute();
   const dispatch = useAppDispatch();
   const item = data?.params as initialData;
@@ -203,7 +203,10 @@ const RegisterScreen = () => {
           }}>
           <CustomText style={styles.label}>Username</CustomText>
           {usernameAvailable != null && (
-            <CustomText variant="h8" fontFamily={FONTS.SemiBold} style={[styles.label, {alignSelf: 'flex-end'}]}>
+            <CustomText
+              variant="h8"
+              fontFamily={FONTS.SemiBold}
+              style={[styles.label, {alignSelf: 'flex-end'}]}>
               {usernameAvailable ? '✅ Available' : '❌ Not Available'}
             </CustomText>
           )}

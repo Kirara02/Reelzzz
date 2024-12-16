@@ -1,5 +1,5 @@
 import {Image, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
-import React, {useState} from 'react';
+import React, {FC, useState} from 'react';
 import {Colors} from '../../constants/Colors';
 import {FONTS} from '../../constants/Fonts';
 import CustomSafeAreaView from '../../components/global/CustomSafeAreaView';
@@ -14,7 +14,7 @@ interface uriData {
   file_uri: string;
 }
 
-const UploadReelScreen = () => {
+const UploadReelScreen: FC = () => {
   const data = useRoute();
   const item = data?.params as uriData;
   const [caption, setCaption] = useState<string>('');
