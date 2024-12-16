@@ -3,7 +3,7 @@ import {Platform} from 'react-native';
 // FOR LOCAL
 
 export const BASE_URL =
-  Platform.OS === 'android' ? 'http://192.168.1.13:3000' : 'http://192.168.1.13:3000';
+  Platform.OS === 'android' ? 'http://192.168.1.5:3000' : 'http://192.168.1.5:3000';
 
 // RUNNING ON REAL DEVICE USE YOUR NETWORK IP TO ACCESS ON REAL DEVICE
 //eg http://192.168.29.88:3000
