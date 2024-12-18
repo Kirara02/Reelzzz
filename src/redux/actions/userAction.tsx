@@ -5,6 +5,7 @@ import {CHECK_USERNAME, REGISTER} from '../API';
 import {Alert} from 'react-native';
 import {token_storage} from '../storage';
 import {resetAndNavigate} from '../../utils/NavigationUtils';
+import {addFollowing} from '../reducers/followingSlice';
 
 interface registerData {
   id_token: string;
@@ -16,19 +17,18 @@ interface registerData {
   bio: string;
 }
 
-export const checkUsernameAvailability =
-  (username: string) => async (dispatch: any) => {
-    try {
-      const res = await axios.post(CHECK_USERNAME, {
-        username,
-      });
+export const checkUsernameAvailability = (username: string) => async (dispatch: any) => {
+  try {
+    const res = await axios.post(CHECK_USERNAME, {
+      username,
+    });
 
-      return res.data.available;
-    } catch (error) {
-      console.log('CHECK USERNAME ERROR ->', error);
-      return null;
-    }
-  };
+    return res.data.available;
+  } catch (error) {
+    console.log('CHECK USERNAME ERROR ->', error);
+    return null;
+  }
+};
 
 export const register = (data: registerData) => async (dispatch: any) => {
   try {
@@ -49,5 +49,19 @@ export const refetchUser = () => async (dispatch: any) => {
     await dispatch(setUser(res.data.user));
   } catch (error) {
     console.log('REFETCH USER--> ', error);
+  }
+};
+
+export const toggleFollow = (userId: string) => async (dispatch: any) => {
+  try {
+    const res = await appAxios.put(`/user/follow/${userId}`);
+    const data = {
+      id: userId,
+      isFollowing: res.data.msg == 'Unfollowed' ? false : true,
+    };
+    dispatch(addFollowing(data));
+    dispatch(refetchUser());
+  } catch (error) {
+    console.log('TOGGLE FOLLOW ERROR', error);
   }
 };

@@ -99,6 +99,7 @@ const FeedReelScrollScreen: FC = () => {
     ({item, index}: {item: any; index: number}) => {
       return (
         <VideoItem
+          key={index}
           item={item}
           isVisible={index === currentVisibleIndex}
           preload={Math.abs(currentVisibleIndex + 2) >= index}

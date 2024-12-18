@@ -1,8 +1,8 @@
 import {View, Text} from 'react-native';
-import React, {memo, useCallback, useEffect, useState} from 'react';
+import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {StyleSheet} from 'react-native';
 import {screenHeight, screenWidth} from '../../utils/Scaling';
-import {useAppDispatch} from '../../redux/reduxHook';
+import {useAppDispatch, useAppSelector} from '../../redux/reduxHook';
 import {useIsFocused} from '@react-navigation/native';
 import FastImage from 'react-native-fast-image';
 import Loader from '../../assets/images/loader.jpg';
@@ -13,6 +13,10 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import {Colors} from '../../constants/Colors';
 import LottieView from 'lottie-react-native';
 import DoubleTapAnim from '../../assets/animations/heart.json';
+import ReelItem from './ReelItem';
+import {toggleLikeReel} from '../../redux/actions/likeAction';
+import {selectLikedReel} from '../../redux/reducers/likeSlice';
+import {SheetManager} from 'react-native-actions-sheet';
 
 interface VideoItemProps {
   item: any;
@@ -22,12 +26,25 @@ interface VideoItemProps {
 
 const VideoItem: React.FC<VideoItemProps> = ({item, isVisible, preload}) => {
   const dispatch = useAppDispatch();
+  const likedReels = useAppSelector(selectLikedReel);
   const [paused, setPaused] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [videoLoaded, setVideoLoaded] = useState<boolean>(false);
   const [showLikeAnim, setShowLikeAnim] = useState<boolean>(false);
 
   const isFocused = useIsFocused();
+
+  const reelMeta = useMemo(() => {
+    return {
+      isLiked: likedReels?.find((ritem: any) => ritem.id === item._id)?.isLiked ?? item?.isLiked,
+      likesCount:
+        likedReels?.find((ritem: any) => ritem.id === item._id)?.likesCount ?? item?.likesCount,
+    };
+  }, [likedReels, item?._id]);
+
+  const handleLikeReel = async () => {
+    await dispatch(toggleLikeReel(item._id, reelMeta?.likesCount, reelMeta?.isLiked));
+  };
 
   const handleTogglePlay = useCallback(() => {
     let currentState = !paused ? 'paused' : 'play';
@@ -40,10 +57,13 @@ const VideoItem: React.FC<VideoItemProps> = ({item, isVisible, preload}) => {
 
   const handleDoubleTapLike = useCallback(() => {
     setShowLikeAnim(true);
+    if (!reelMeta?.isLiked) {
+      handleLikeReel();
+    }
     setTimeout(() => {
       setShowLikeAnim(false);
     }, 1200);
-  }, []);
+  }, [reelMeta]);
 
   const singleTap = Gesture.Tap()
     .maxDuration(250)
@@ -97,7 +117,6 @@ const VideoItem: React.FC<VideoItemProps> = ({item, isVisible, preload}) => {
             {isVisible || preload ? (
               <Video
                 poster={item.thumbUri}
-                posterResizeMode="cover"
                 source={isVisible || preload ? {uri: convertToProxyURL(item.videoUri)} : undefined}
                 bufferConfig={{
                   minBufferMs: 2500,
@@ -112,7 +131,8 @@ const VideoItem: React.FC<VideoItemProps> = ({item, isVisible, preload}) => {
                 controls={false}
                 disableFocus={true}
                 style={styles.videoContainer}
-                paused={isPaused}
+                // paused={isPaused}
+                paused={true}
                 repeat={true}
                 hideShutterView
                 minLoadRetryCount={5}
@@ -142,6 +162,27 @@ const VideoItem: React.FC<VideoItemProps> = ({item, isVisible, preload}) => {
           </View>
         </View>
       )}
+
+      <ReelItem
+        user={item?.user}
+        description={item.caption}
+        likes={23}
+        comments={32}
+        onLike={() => {
+          handleLikeReel();
+        }}
+        onComment={() => {}}
+        onShare={() => {}}
+        onLongPressLike={() => {
+          SheetManager.show('like-sheet', {
+            payload: {
+              entityId: item?._id,
+              type: 'reel',
+            },
+          });
+        }}
+        isLiked={reelMeta?.isLiked}
+      />
     </View>
   );
 };

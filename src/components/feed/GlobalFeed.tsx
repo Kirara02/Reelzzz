@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react';
 import GlobalBg from '../../assets/images/globebg.jpg';
 import {screenHeight, screenWidth} from '../../utils/Scaling';
 import {fetchFeedReels} from '../../redux/actions/reelAction';
-import {useAppDispatch} from '../../redux/reduxHook';
+import {useAppDispatch, useAppSelector} from '../../redux/reduxHook';
 import ReelItemCard from './ReelItemCard';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, useSharedValue} from 'react-native-reanimated';
