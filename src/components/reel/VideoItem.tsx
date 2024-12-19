@@ -17,6 +17,7 @@ import ReelItem from './ReelItem';
 import {toggleLikeReel} from '../../redux/actions/likeAction';
 import {selectLikedReel} from '../../redux/reducers/likeSlice';
 import {SheetManager} from 'react-native-actions-sheet';
+import {selectComments} from '../../redux/reducers/commentSlice';
 
 interface VideoItemProps {
   item: any;
@@ -27,6 +28,7 @@ interface VideoItemProps {
 const VideoItem: React.FC<VideoItemProps> = ({item, isVisible, preload}) => {
   const dispatch = useAppDispatch();
   const likedReels = useAppSelector(selectLikedReel);
+  const commentsCounts = useAppSelector(selectComments);
   const [paused, setPaused] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [videoLoaded, setVideoLoaded] = useState<boolean>(false);
@@ -41,6 +43,13 @@ const VideoItem: React.FC<VideoItemProps> = ({item, isVisible, preload}) => {
         likedReels?.find((ritem: any) => ritem.id === item._id)?.likesCount ?? item?.likesCount,
     };
   }, [likedReels, item?._id]);
+
+  const commentMeta = useMemo(() => {
+    return (
+      commentsCounts?.find((ritem: any) => ritem.reelId === item._id)?.commentsCount ??
+      item?.commentsCount
+    );
+  }, [commentsCounts, item?._id]);
 
   const handleLikeReel = async () => {
     await dispatch(toggleLikeReel(item._id, reelMeta?.likesCount, reelMeta?.isLiked));
@@ -166,12 +175,20 @@ const VideoItem: React.FC<VideoItemProps> = ({item, isVisible, preload}) => {
       <ReelItem
         user={item?.user}
         description={item.caption}
-        likes={23}
-        comments={32}
+        likes={reelMeta?.likesCount || 0}
+        comments={commentMeta}
         onLike={() => {
           handleLikeReel();
         }}
-        onComment={() => {}}
+        onComment={() => {
+          SheetManager.show('comment-sheet', {
+            payload: {
+              id: item?._id,
+              user: item?.user,
+              commentsCount: item.commentsCount,
+            },
+          });
+        }}
         onShare={() => {}}
         onLongPressLike={() => {
           SheetManager.show('like-sheet', {

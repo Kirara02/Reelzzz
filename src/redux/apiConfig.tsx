@@ -27,15 +27,14 @@ appAxios.interceptors.response.use(
           return axios(error.config);
         }
       } catch (error) {
-        console.log(error);
+        console.log('Error Refreshing Token');
       }
     }
 
     if (error.response && error.response.status != 401) {
-      const errorMessage = error.response.data.msg || 'Something went wrong';
-      Alert.alert(error);
+      const errorMessage = error.response.data.msg || 'something went wrong';
+      Alert.alert(errorMessage);
     }
-
     return Promise.reject(error);
   },
 );
@@ -52,7 +51,7 @@ export const refresh_tokens = async () => {
     token_storage.set('refresh_token', new_refresh_token);
     return new_access_token;
   } catch (error) {
-    console.log('REFRESH TOKEN ERROR');
+    console.log('REFRESH TOKEN ERROR', error);
     token_storage.clearAll();
     resetAndNavigate('LoginScreen');
   }
